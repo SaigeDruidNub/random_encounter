@@ -1,107 +1,111 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Monster } from "../monsterLoader";
 
-export default function EncounterPage() {
-  const searchParams = useSearchParams();
-  const [partyLevel, setPartyLevel] = useState(3);
-  const [partySize, setPartySize] = useState(4);
-  const [difficulty, setDifficulty] = useState<
-    "easy" | "medium" | "hard" | "deadly"
-  >("medium");
+export default function MonsterSearchPage() {
+  const router = useRouter();
+  const [cr, setCr] = useState<string>("1");
   const [userPrompt, setUserPrompt] = useState("");
-  const [encounter, setEncounter] = useState<Monster[]>([]);
+  const [monsters, setMonsters] = useState<Monster[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const promptParam = searchParams.get("prompt");
-    if (promptParam) {
-      setUserPrompt(promptParam);
-    }
-  }, [searchParams]);
-
-  const handleGenerate = async () => {
+  const handleSearch = async () => {
     setLoading(true);
-    const response = await fetch("/api/gemini-encounter", {
+    const response = await fetch("/api/search-monsters", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ partyLevel, partySize, difficulty, userPrompt }),
+      body: JSON.stringify({ cr: parseFloat(cr), userPrompt }),
     });
     const data = await response.json();
-    setEncounter(data.encounter || []);
+    setMonsters(data.monsters || []);
     setLoading(false);
   };
 
   const handleClear = () => {
-    setEncounter([]);
+    setMonsters([]);
+  };
+
+  const handleUseInEncounter = (monsterName: string) => {
+    router.push(`/encounter?prompt=use ${encodeURIComponent(monsterName)}`);
+  };
+
+  const crOptions = [
+    "0",
+    "0.125",
+    "0.25",
+    "0.5",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30",
+  ];
+
+  const formatCR = (cr: string) => {
+    if (cr === "0.125") return "1/8";
+    if (cr === "0.25") return "1/4";
+    if (cr === "0.5") return "1/2";
+    return cr;
   };
 
   return (
-    <main style={{ maxWidth: "900px", margin: "0 auto", padding: "2rem" }}>
-      <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem" }}>
-        <Link
-          href="/"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.5rem 1rem",
-            backgroundColor: "var(--background-secondary)",
-            color: "var(--text-primary)",
-            textDecoration: "none",
-            borderRadius: "8px",
-            fontSize: "1rem",
-            fontWeight: "600",
-            transition: "all 0.3s",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor =
-              "var(--background-tertiary)";
-            e.currentTarget.style.transform = "translateX(-4px)";
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor =
-              "var(--background-secondary)";
-            e.currentTarget.style.transform = "translateX(0)";
-          }}
-        >
-          ← Back to Home
-        </Link>
-
-        <Link
-          href="/monster-search"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.5rem 1rem",
-            backgroundColor: "var(--background-secondary)",
-            color: "var(--text-primary)",
-            textDecoration: "none",
-            borderRadius: "8px",
-            fontSize: "1rem",
-            fontWeight: "600",
-            transition: "all 0.3s",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor =
-              "var(--background-tertiary)";
-            e.currentTarget.style.transform = "translateY(-2px)";
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor =
-              "var(--background-secondary)";
-            e.currentTarget.style.transform = "translateY(0)";
-          }}
-        >
-          🔍 Search Monsters
-        </Link>
-      </div>
+    <main style={{ maxWidth: "1000px", margin: "0 auto", padding: "2rem" }}>
+      <Link
+        href="/"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          marginBottom: "1.5rem",
+          padding: "0.5rem 1rem",
+          backgroundColor: "var(--background-secondary)",
+          color: "var(--text-primary)",
+          textDecoration: "none",
+          borderRadius: "8px",
+          fontSize: "1rem",
+          fontWeight: "600",
+          transition: "all 0.3s",
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.backgroundColor = "var(--background-tertiary)";
+          e.currentTarget.style.transform = "translateX(-4px)";
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.backgroundColor = "var(--background-secondary)";
+          e.currentTarget.style.transform = "translateX(0)";
+        }}
+      >
+        ← Back to Home
+      </Link>
 
       <h1
         style={{
@@ -114,7 +118,7 @@ export default function EncounterPage() {
           paddingBottom: "1rem",
         }}
       >
-        ⚔️ Random Encounter Generator ⚔️
+        🔍 Monster Search by CR 🐉
       </h1>
 
       <div
@@ -135,116 +139,29 @@ export default function EncounterPage() {
               marginBottom: "0.5rem",
             }}
           >
-            🎲 Party Level:
-            <input
-              type="number"
-              value={partyLevel}
-              onChange={(e) => setPartyLevel(Number(e.target.value))}
-              min="1"
-              max="20"
-              style={{
-                marginLeft: "1rem",
-                padding: "0.5rem 1rem",
-                fontSize: "1rem",
-                borderRadius: "6px",
-                border: "2px solid var(--background-tertiary)",
-                backgroundColor: "var(--background)",
-                color: "var(--text-primary)",
-                width: "80px",
-              }}
-            />
-          </label>
-        </div>
-
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label
-            style={{
-              display: "block",
-              fontSize: "1.1rem",
-              fontWeight: "600",
-              marginBottom: "0.5rem",
-            }}
-          >
-            👥 Party Size:
-            <input
-              type="number"
-              value={partySize}
-              onChange={(e) => setPartySize(Number(e.target.value))}
-              min="1"
-              max="10"
-              style={{
-                marginLeft: "1rem",
-                padding: "0.5rem 1rem",
-                fontSize: "1rem",
-                borderRadius: "6px",
-                border: "2px solid var(--background-tertiary)",
-                backgroundColor: "var(--background)",
-                color: "var(--text-primary)",
-                width: "80px",
-              }}
-            />
-          </label>
-        </div>
-
-        <div style={{ marginBottom: "1.5rem" }}>
-          <label
-            style={{
-              display: "block",
-              fontSize: "1.1rem",
-              fontWeight: "600",
-              marginBottom: "0.5rem",
-            }}
-          >
-            💀 Difficulty:
-          </label>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "1rem",
-            }}
-          >
+            ⚠️ Challenge Rating (CR):
             <select
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value as any)}
+              value={cr}
+              onChange={(e) => setCr(e.target.value)}
               style={{
+                marginLeft: "1rem",
                 padding: "0.5rem 1rem",
                 fontSize: "1rem",
                 borderRadius: "6px",
                 border: "2px solid var(--background-tertiary)",
                 backgroundColor: "var(--background)",
                 color: "var(--text-primary)",
+                width: "120px",
                 cursor: "pointer",
               }}
             >
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-              <option value="deadly">Deadly</option>
+              {crOptions.map((option) => (
+                <option key={option} value={option}>
+                  {formatCR(option)}
+                </option>
+              ))}
             </select>
-            <p
-              style={{
-                margin: 0,
-                padding: "0.75rem 1rem",
-                backgroundColor: "var(--background)",
-                borderRadius: "8px",
-                borderLeft: "4px solid var(--background-tertiary)",
-                fontSize: "0.9rem",
-                lineHeight: "1.4",
-                color: "var(--text-primary)",
-                flex: 1,
-              }}
-            >
-              {difficulty === "easy" &&
-                "The party might lose a few hit points, but victory is pretty much guaranteed"}
-              {difficulty === "medium" &&
-                "One or more party members might need to use healing resources"}
-              {difficulty === "hard" &&
-                "Weaker characters might be taken out of the fight, and there's a slim chance one or more characters might die"}
-              {difficulty === "deadly" &&
-                "Could be lethal for one or more player characters. Survival requires good tactics and quick thinking."}
-            </p>
-          </div>
+          </label>
         </div>
 
         <div style={{ marginBottom: "1.5rem" }}>
@@ -256,11 +173,11 @@ export default function EncounterPage() {
               marginBottom: "0.5rem",
             }}
           >
-            ✨ Additional Guidance (optional):
+            ✨ Additional Search Guidance (optional):
             <textarea
               value={userPrompt}
               onChange={(e) => setUserPrompt(e.target.value)}
-              placeholder="e.g., Include undead creatures, set in a forest, make it thematic..."
+              placeholder="e.g., Focus on undead, prefer flying creatures, include spellcasters..."
               rows={4}
               style={{
                 width: "100%",
@@ -279,7 +196,7 @@ export default function EncounterPage() {
         </div>
 
         <button
-          onClick={handleGenerate}
+          onClick={handleSearch}
           disabled={loading}
           style={{
             backgroundColor: loading
@@ -312,11 +229,11 @@ export default function EncounterPage() {
             }
           }}
         >
-          {loading ? "⏳ Generating..." : "🎲 Generate Encounter"}
+          {loading ? "⏳ Searching..." : "🔍 Search Monsters"}
         </button>
       </div>
 
-      {encounter.length > 0 && (
+      {monsters.length > 0 && (
         <div
           style={{
             backgroundColor: "var(--background-secondary)",
@@ -342,7 +259,7 @@ export default function EncounterPage() {
                 margin: 0,
               }}
             >
-              ⚔️ Your Encounter
+              📚 Search Results
             </h2>
             <button
               onClick={handleClear}
@@ -368,7 +285,7 @@ export default function EncounterPage() {
                 e.currentTarget.style.transform = "translateY(0)";
               }}
             >
-              🗑️ Clear Encounter
+              🗑️ Clear Results
             </button>
           </div>
           <p
@@ -378,12 +295,12 @@ export default function EncounterPage() {
               fontWeight: "600",
             }}
           >
-            🐉 Monsters: {encounter.length}
+            🐉 Found {monsters.length} monster{monsters.length !== 1 ? "s" : ""}
           </p>
           <div
             style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
           >
-            {encounter.map((monster, index) => (
+            {monsters.map((monster, index) => (
               <div
                 key={`${monster.name}-${index}`}
                 style={{
@@ -503,6 +420,39 @@ export default function EncounterPage() {
                 >
                   📖 Monster Manual p. {monster.page}
                 </p>
+                <button
+                  onClick={() => handleUseInEncounter(monster.name)}
+                  style={{
+                    marginTop: "1rem",
+                    width: "100%",
+                    padding: "0.75rem 1.5rem",
+                    fontSize: "1rem",
+                    backgroundColor: "var(--background-tertiary)",
+                    color: "var(--text-primary)",
+                    border: "none",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                    transition: "all 0.3s",
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      "var(--text-secondary)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 4px 8px rgba(0, 0, 0, 0.4)";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      "var(--background-tertiary)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow =
+                      "0 2px 4px rgba(0, 0, 0, 0.3)";
+                  }}
+                >
+                  🎲 Use in Random Encounter
+                </button>
               </div>
             ))}
           </div>
